@@ -1,0 +1,135 @@
+
+-- RIVALS X HUB
+-- Local weapon appearance customization
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RivalsXHub"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(300, 390)
+main.Position = UDim2.new(0.5, -150, 0.5, -195)
+main.BackgroundColor3 = Color3.fromRGB(18, 14, 30)
+main.Parent = gui
+
+Instance.new("UICorner", main).CornerRadius =
+    UDim.new(0, 14)
+
+local stroke = Instance.new("UIStroke", main)
+stroke.Color = Color3.fromRGB(170, 75, 255)
+stroke.Thickness = 2
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundColor3 = Color3.fromRGB(43, 25, 68)
+title.Text = "★ RIVALS X HUB"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 19
+title.Parent = main
+
+local content = Instance.new("Frame")
+content.Position = UDim2.fromOffset(12, 62)
+content.Size = UDim2.new(1, -24, 1, -74)
+content.BackgroundTransparency = 1
+content.Parent = main
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 8)
+layout.Parent = content
+
+local function getTools()
+    local tools = {}
+    local backpack = player:FindFirstChildOfClass("Backpack")
+
+    for _, container in ipairs({player.Character, backpack}) do
+        if container then
+            for _, obj in ipairs(container:GetChildren()) do
+                if obj:IsA("Tool") then
+                    table.insert(tools, obj)
+                end
+            end
+        end
+    end
+
+    return tools
+end
+
+local originals = {}
+
+local function restore()
+    for part, data in pairs(originals) do
+        if part and part.Parent then
+            part.Color = data.color
+            part.Material = data.material
+        end
+    end
+    table.clear(originals)
+end
+
+local function applyColor(color, material)
+    restore()
+
+    for _, tool in ipairs(getTools()) do
+        for _, part in ipairs(tool:GetDescendants()) do
+            if part:IsA("BasePart") then
+                originals[part] = {
+                    color = part.Color,
+                    material = part.Material
+                }
+
+                part.Color = color
+                part.Material = material
+            end
+        end
+    end
+end
+
+local presets = {
+    PURPLE = Color3.fromRGB(160, 65, 255),
+    CRIMSON = Color3.fromRGB(240, 35, 60),
+    GOLD = Color3.fromRGB(255, 190, 35),
+    DIAMOND = Color3.fromRGB(65, 220, 255),
+    EMERALD = Color3.fromRGB(30, 220, 120)
+}
+
+local function addButton(name, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 39)
+    button.BackgroundColor3 = Color3.fromRGB(49, 33, 72)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Text = name
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+    button.Parent = content
+
+    Instance.new("UICorner", button).CornerRadius =
+        UDim.new(0, 8)
+
+    button.MouseButton1Click:Connect(callback)
+end
+
+for name, color in pairs(presets) do
+    addButton("★ " .. name, function()
+        applyColor(color, Enum.Material.Neon)
+    end)
+end
+
+addButton("★ SMOOTH METAL", function()
+    applyColor(
+        Color3.fromRGB(180, 180, 190),
+        Enum.Material.Metal
+    )
+end)
+
+addButton("★ RESTORE ORIGINAL", restore)
+
+addButton("CLOSE HUB", function()
+    gui:Destroy()
+end)
+
+print("RIVALS X HUB LOADED")
